@@ -71,5 +71,8 @@
 (ต้นน้ำ - เขียนขั้นตอนการสร้าง Amplify และขึ้นหน้าเว็ป)
 ### MAP API
 (โปรแกรม - เขียนขั้นตอนการดึง API แผนที่มาใส่หน้าเว็ป)
+
+
+
 ### API Gateway / Lambda function
-(โปรแกรม - เขียนขั้นตอนการสร้าง kinesis และ lambda function ฝั่งข้อมูลขาเข้า) 
+(มิว - เขียนขั้นตอนการสร้าง API Gateway และ lambda function ) 
