@@ -17,8 +17,7 @@
 
 ---
 ### IoT Device / Iot Core : เชื่อมต่อและส่งข้อมูลด้วย IoT Core
-
-
+การติดตั้งอุปกรณ์ IoT และการเชื่อมต่อ IoT core สามารถดูได้ที่ https://github.com/TheepprakornRakfaen/CS262-TUNotification/blob/dad5a3872f94f256ca8c50dc4dc837bfe4db1e07/IoTDevice.md
 
 
 ---
