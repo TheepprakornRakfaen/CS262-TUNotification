@@ -288,7 +288,7 @@ def lambda_handler(event, context):
 
 CSS มีบทบาท 2 อย่างในโปรเจกต์นี้
 
-** 1) ทำให้ `#map` เต็มหน้าจอ**
+**1) ทำให้ `#map` เต็มหน้าจอ**
 
 ```css
 html, body {
@@ -303,7 +303,7 @@ html, body {
 }
 ```
 
-** 2) ทำให้ Search Box และปุ่ม ⚙️ ลอยเหนือแผนที่**
+**2) ทำให้ Search Box และปุ่ม ⚙️ ลอยเหนือแผนที่**
 
 ```css
 .top-ui-container {
