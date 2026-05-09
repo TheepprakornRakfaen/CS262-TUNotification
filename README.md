@@ -92,6 +92,13 @@ Encryption
 - รองรับการขยาย	ข้อมูลเพิ่มเป็นล้านแถว ระบบก็ยังทำงานได้ปกติ
 - เชื่อมต่อกับ API	ให้หน้าเว็บดึงข้อมูลไปแสดงผลได้
 
+Database Schema
+
+<img width="1797" height="451" alt="image" src="https://github.com/user-attachments/assets/223eab3a-e429-46c5-843a-867f8acd6a6f" />
+
+
+
+
 <br><br>
 
 
