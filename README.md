@@ -64,7 +64,11 @@
 
 ## SECTION 2 : DATABASE
 ### DynamoDB
-(โอม - เขียนขั้นตอนการสร้าง Dynamodb)
+ขั้นตอนเเรก ตั้งชื่อตาราง และกำหนด Partition Key / Sort Key
+- ตั้งชื่อตาราง TUNotification ให้ตารางมีเอกลักษณ์ สะดวกในการอ้างอิงจาก Lambda และ API
+- 
+
+
 
 ## SECTION 3 : WEB APPLICATION
 ### Amplify 
