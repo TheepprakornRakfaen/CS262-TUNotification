@@ -254,7 +254,7 @@ def lambda_handler(event, context):
 
 ## ขั้นตอนการเชื่อมต่อแผนที่กับหน้าเว็บไซต์
 
-ขั้นตอนที่ 1 — HTML เชื่อม CSS และ JavaScript เข้าหากัน
+ขั้นตอนที่ 1 HTML เชื่อม CSS และ JavaScript เข้าหากัน
 
 **`index.html`** ทำหน้าที่เป็นจุดศูนย์กลางที่โหลดทุกอย่างเข้ามารวมกัน
 
@@ -280,15 +280,15 @@ def lambda_handler(event, context):
 </body>
 ```
 
-> ⚠️ **ลำดับ `<script>` สำคัญมาก** — `leaflet.js` ต้องมาก่อน `leaflet-heat.js` และ `script.js` เสมอ
+> **ลำดับ `<script>` สำคัญมาก** — `leaflet.js` ต้องมาก่อน `leaflet-heat.js` และ `script.js` เสมอ
 
 ---
 
-ขั้นตอนที่ 2 — CSS ทำให้แผนที่เต็มหน้าจอและ UI ลอยอยู่ด้านบน
+ขั้นตอนที่ 2 CSS ทำให้แผนที่เต็มหน้าจอและ UI ลอยอยู่ด้านบน
 
 CSS มีบทบาท 2 อย่างในโปรเจกต์นี้
 
-**① ทำให้ `#map` เต็มหน้าจอ**
+** 1) ทำให้ `#map` เต็มหน้าจอ**
 
 ```css
 html, body {
@@ -303,7 +303,7 @@ html, body {
 }
 ```
 
-**② ทำให้ Search Box และปุ่ม ⚙️ ลอยเหนือแผนที่**
+** 2) ทำให้ Search Box และปุ่ม ⚙️ ลอยเหนือแผนที่**
 
 ```css
 .top-ui-container {
@@ -317,7 +317,7 @@ html, body {
 
 ---
 
-ขั้นตอนที่ 3 — JavaScript สร้างแผนที่และ Heatmap ลงใน `<div id="map">`
+ขั้นตอนที่ 3 JavaScript สร้างแผนที่และ Heatmap ลงใน `<div id="map">`
 
 ```javascript
 // 1. อ่าน <div id="map"> แล้ววางแผนที่ลงไป
