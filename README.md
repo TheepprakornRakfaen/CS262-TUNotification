@@ -245,6 +245,144 @@ def lambda_handler(event, context):
 ## การตั้งค่าเพิ่มเติม (สำหรับ API Gateway)
 *(สำคัญสำหรับโปรเจกต์นี้)* เมื่อ Deploy หน้าเว็บสำเร็จแล้ว ให้คัดลอก Domain URL ของเว็บไซต์ ไปตั้งค่า CORS (Cross-Origin Resource Sharing) ในหน้าตั้งค่าของ AWS API Gateway ด้วย เพื่ออนุญาตให้หน้าเว็บนี้สามารถดึงข้อมูลพิกัดเสียงมาจาก API ได้โดยไม่ติดบล็อกความปลอดภัย
 
-### MAP API
-(โปรแกรม - เขียนขั้นตอนการดึง API แผนที่มาใส่หน้าเว็ป)
+---
 
+
+### MAP API
+
+> แสดงผลด้วย Interactive Heatmap บนแผนที่จริง ผ่าน Leaflet.js
+
+## ขั้นตอนการเชื่อมต่อแผนที่กับหน้าเว็บไซต์
+
+ขั้นตอนที่ 1 — HTML เชื่อม CSS และ JavaScript เข้าหากัน
+
+**`index.html`** ทำหน้าที่เป็นจุดศูนย์กลางที่โหลดทุกอย่างเข้ามารวมกัน
+
+```html
+<head>
+    <!-- 1. CSS ของ Leaflet (ต้องโหลดก่อน style.css) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- 2. CSS ของเราเอง -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 3. UI ลอยเหนือแผนที่ -->
+    <div class="top-ui-container"> ... </div>
+
+    <!-- 4. พื้นที่วางแผนที่ (ต้องมี id="map" ตรงกับ script.js) -->
+    <div id="map"></div>
+
+    <!-- 5. โหลด JS ตามลำดับก่อนปิด </body> เสมอ -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="script.js"></script>
+</body>
+```
+
+> ⚠️ **ลำดับ `<script>` สำคัญมาก** — `leaflet.js` ต้องมาก่อน `leaflet-heat.js` และ `script.js` เสมอ
+
+---
+
+ขั้นตอนที่ 2 — CSS ทำให้แผนที่เต็มหน้าจอและ UI ลอยอยู่ด้านบน
+
+CSS มีบทบาท 2 อย่างในโปรเจกต์นี้
+
+**① ทำให้ `#map` เต็มหน้าจอ**
+
+```css
+html, body {
+    height: 100%;     /* จำเป็น — ถ้าไม่มี height: 100% บน #map จะไม่ทำงาน */
+    margin: 0;
+    overflow: hidden; /* ป้องกัน Scrollbar โผล่ */
+}
+
+#map {
+    height: 100%;     /* รับค่าจาก body ด้านบน */
+    width: 100%;
+}
+```
+
+**② ทำให้ Search Box และปุ่ม ⚙️ ลอยเหนือแผนที่**
+
+```css
+.top-ui-container {
+    position: absolute;          /* ลอยออกจาก flow ปกติ */
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%); /* จัดกึ่งกลางแนวนอน */
+    z-index: 1000;               /* ต้องสูงกว่า Leaflet ที่ใช้ z-index: 400–600 */
+}
+```
+
+---
+
+ขั้นตอนที่ 3 — JavaScript สร้างแผนที่และ Heatmap ลงใน `<div id="map">`
+
+```javascript
+// 1. อ่าน <div id="map"> แล้ววางแผนที่ลงไป
+map = L.map('map').setView(LC2_LOCATION, 18);
+
+// 2. โหลดกระเบื้องแผนที่จาก OpenStreetMap เป็น Background
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+// 3. ดึงข้อมูล IoT แล้ววาด Heatmap ทับลงบนแผนที่
+renderHeatmap();
+
+// 4. วางจุดสีฟ้า "คุณอยู่ที่นี่"
+L.circleMarker(LC2_LOCATION, { ... }).addTo(map);
+```
+
+---
+
+## ภาพรวมการทำงาน (Flow)
+
+```
+เปิดหน้าเว็บ (index.html)
+        │
+        ├── โหลด leaflet.css   → จัด style ภายในของแผนที่
+        ├── โหลด style.css     → กำหนดขนาด #map และ z-index ของ UI
+        │       ├── html, body { height: 100% }   → body เต็มหน้าจอ
+        │       ├── #map { height: 100% }          → แผนที่เต็มหน้าจอ
+        │       └── .top-ui-container { z-index: 1000 } → UI ลอยอยู่เหนือแผนที่
+        │
+        ├── โหลด leaflet.js        → สร้างตัวแปร L พร้อมใช้งาน
+        ├── โหลด leaflet-heat.js   → เพิ่มความสามารถ L.heatLayer()
+        └── โหลด script.js         → รัน initMap()
+                │
+                ├── L.map('map')       → แผนที่ปรากฏใน <div id="map">
+                ├── L.tileLayer()      → โหลดแผนที่ OSM เป็น Background
+                ├── L.heatLayer()      → วาด Heatmap ระดับเสียง
+                └── L.circleMarker()   → วางจุดตำแหน่งปัจจุบัน
+```
+
+---
+
+## ความสัมพันธ์ระหว่าง 3 ไฟล์
+
+| ไฟล์ | หน้าที่ | เชื่อมกับ |
+|---|---|---|
+| `index.html` | โครงสร้างหน้าเว็บ + จุดเชื่อมทุกอย่างเข้าหากัน | `style.css`, `script.js` |
+| `style.css` | ทำให้แผนที่เต็มหน้าจอ และให้ UI ลอยอยู่เหนือแผนที่ | `#map`, `.top-ui-container` ใน HTML |
+| `script.js` | สร้างแผนที่จริง วาด Heatmap และแสดงข้อมูล IoT | `<div id="map">` ใน HTML |
+
+---
+
+## ⚠️ ปัญหาที่พบบ่อย
+
+| อาการ | สาเหตุ | วิธีแก้ |
+|---|---|---|
+| แผนที่ไม่แสดง | `#map` ไม่มีความสูง | ตรวจสอบว่า `html, body` มี `height: 100%` |
+| `L is not defined` | โหลด `script.js` ก่อน `leaflet.js` | เรียงลำดับ `<script>` ใหม่ให้ถูกต้อง |
+| Heatmap ไม่แสดง | `leaflet-heat.js` โหลดก่อน `leaflet.js` | สลับลำดับให้ถูกต้อง |
+| UI ถูกแผนที่บัง | `z-index` ของ `.top-ui-container` ต่ำเกินไป | เพิ่มค่าเป็น `z-index: 1000` ขึ้นไป |
+| แผนที่แสดงครึ่งเดียว | Resize window หลังโหลดเสร็จ | เรียก `map.invalidateSize()` |
+
+---
+
+## Tech Stack
+
+- [Leaflet.js](https://leafletjs.com/) `v1.9.4` — Interactive Map
+- [Leaflet.heat](https://github.com/Leaflet/Leaflet.heat) — Heatmap Plugin
+- [OpenStreetMap](https://www.openstreetmap.org/) — Map Tiles
+- Vanilla HTML / CSS / JavaScript — ไม่ใช้ Framework
