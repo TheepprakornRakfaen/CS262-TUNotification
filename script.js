@@ -51,13 +51,25 @@ async function renderHeatmap() {
     }).addTo(map);
 }
 
-/// ข้อมูลจำลอง
+// เปลี่ยนจากข้อมูลจำลอง เป็นการดึงข้อมูลจาก API จริง
 async function fetchIoTData() {
-    return [
-        // กระจายจุดตามความยาวของตึก ซ้าย กลาง ขวา
-        { "decibel": 45, "latitude": 14.073348245448962, "longitude": 100.60628465555105 }, 
-        { "decibel": 70, "latitude":14.072630174271149, "longitude": 100.60631147764053}
-    ];
+    try {
+        const response = await fetch('https://q6icc018q6.execute-api.us-east-1.amazonaws.com/sound');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("Data from DynamoDB:", data); // ปริ้นดูข้อมูลใน Console เผื่อใช้ตรวจสอบ
+        
+        return data;
+
+    } catch (error) {
+        console.error("Error fetching IoT data:", error);
+        return []; // ถ้า Error ให้ส่ง Array ว่างกลับไป แผนที่อิงจะได้ไม่พัง
+    }
 }
+
 // รันฟังก์ชันสร้างแผนที่
 initMap();
