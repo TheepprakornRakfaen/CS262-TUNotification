@@ -69,42 +69,65 @@ AWS Amplify ใช้สำหรับ Hosting และ Deploy Web Application
 ### lambda function : ส่งข้อมูลไปยัง Database ด้วย Lambda function
 1.เขียนโค้ดดังนี้ลงใน lambda function
 ```Python
-    const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-    const { DynamoDBDocumentClient, PutCommand } = require("@aws-sdk/lib-dynamodb");
+    import base64
+import json
+import boto3
+import urllib.request
+import urllib.parse
+from decimal import Decimal
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('') #ใส่ชื่อ Tables DynamoDB ที่สร้างขึ้น
+
+CHANNEL_ACCESS_TOKEN = '' #ใส่ Channel access token ของ Bot ใน LINE Developer
+USER_ID = '' #ใส่ USER_ID ใน LINE Developer
+NOISE_THRESHOLD = 40.0  
+
+def send_line_bot(message):
+    url = 'https://api.line.me/v2/bot/message/push'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {CHANNEL_ACCESS_TOKEN}'
+    }
+
+    data = {
+        "to": USER_ID,
+        "messages": [{"type": "text", "text": message}]
+    }
     
-    const client = new DynamoDBClient({});
-    const docClient = DynamoDBDocumentClient.from(client);
-      exports.handler = async (event) => {
-      console.log("Receiving data from Kinesis...");
-        for (const record of event.Records) {
-            try {
-                // 1. Decode ข้อมูลจาก Base64 เป็น String และแปลงเป็น JSON
-                const payload = Buffer.from(record.kinesis.data, 'base64').toString('ascii');
-                const data = JSON.parse(payload);
-              
-              console.log("Decoded Data:", data);
-           
-              const params = {
-                  TableName: "Your_DynamoDB_Table_Name", // เปลี่ยนเป็นชื่อตารางของคุณ
-                  Item: {
-                      "location_name": data.location_name, // Partition Key
-                      "timestamp": data.timestamp || new Date().toISOString(), // Sort Key (ถ้ามี)
-                      "coordinates": data.coordinates,
-                      "noise_level": data.noise_level,
-                      "raw_data": data
-                  }
-              };
-              
-              await docClient.send(new PutCommand(params));
-              console.log("Successfully saved to DynamoDB");
-  
-          } catch (error) {
-              console.error("Error processing record:", error);
-          }
-      }
-      
-      return { status: "success" };
-    };"
+    payload = json.dumps(data).encode('utf-8')
+    req = urllib.request.Request(url, headers=headers, data=payload)
+    
+    try:
+        urllib.request.urlopen(req)
+        print("✅ ส่ง LINE Bot สำเร็จ!")
+    except Exception as e:
+        print(f"❌ ส่ง LINE Bot พลาด: {e}")
+
+def lambda_handler(event, context):
+    for record in event['Records']:
+        payload = base64.b64decode(record['kinesis']['data']).decode('utf-8')
+        
+        data = json.loads(payload, parse_float=Decimal)
+        
+        print(f"ได้รับข้อมูล: {data}")
+        
+        table.put_item(
+            Item={
+                'deviceId': data['deviceId'],
+                'timestamp': data['timestamp'],
+                'decibel': data['decibel'],
+                'latitude': data['latitude'],
+                'longitude': data['longitude']
+            }
+        )
+        if data['decibel'] >= NOISE_THRESHOLD:
+            alert_msg = f"⚠️ แจ้งเตือนเสียงดังผิดปกติ!\n📍 อุปกรณ์: {data['deviceId']} พิกัด:{data['latitude']},{data['longitude']}\n🔊 ความดัง: {data['decibel']} dB\n🕒 เวลา: {data['timestamp']}"
+            send_line_bot(alert_msg)
+    return {
+        'statusCode': 200,
+        'body': json.dumps('บันทึกข้อมูลเรียบร้อย!')
+    }
 ```
 
 2.ไปที่เมนู Configuration ในหน้า Lambda <br>
